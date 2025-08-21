@@ -5,6 +5,7 @@
 #include "config.h"
 #include "motor.h"
 #include "traffic_light.h"
+#include "lcd.h"
 
 // ========== COMMAND FUNCTION TYPE ==========
 typedef void (*CommandFunction)(String);
@@ -65,12 +66,10 @@ void handleForwardCommand(String args) {
   int steps = args.toInt();
   if (validateStepCount(steps)) {
     Serial.println("Moving forward " + String(steps) + " steps");
-    extern void displayCommand(String command);
     displayCommand("FWD " + String(steps));
     moveSteps(steps, CLOCKWISE);
   } else {
     Serial.println("Invalid step count");
-    extern void displayError(String error);
     displayError("Invalid steps");
   }
 }
@@ -79,12 +78,10 @@ void handleReverseCommand(String args) {
   int steps = args.toInt();
   if (validateStepCount(steps)) {
     Serial.println("Moving reverse " + String(steps) + " steps");
-    extern void displayCommand(String command);
     displayCommand("REV " + String(steps));
     moveSteps(steps, COUNTER_CLOCKWISE);
   } else {
     Serial.println("Invalid step count");
-    extern void displayError(String error);
     displayError("Invalid steps");
   }
 }
@@ -93,11 +90,9 @@ void handleSpeedCommand(String args) {
   int speed = args.toInt();
   if (setMotorSpeed(speed)) {
     Serial.println("Speed set to " + String(speed));
-    extern void displayCommand(String command);
     displayCommand("SPD " + String(speed));
   } else {
     Serial.println("Speed must be between " + String(MIN_STEP_DELAY) + " and " + String(MAX_STEP_DELAY));
-    extern void displayError(String error);
     displayError("Invalid speed");
   }
 }
@@ -105,12 +100,10 @@ void handleSpeedCommand(String args) {
 void handleStopCommand(String args) {
   stopMotor();
   Serial.println("Motor stopped");
-  extern void displayCommand(String command);
   displayCommand("STOP");
 }
 
 void handleDemoCommand(String args) {
-  extern void displayCommand(String command);
   displayCommand("DEMO");
   runMotorDemo();
 }
@@ -166,12 +159,11 @@ void handleTimingCommand(String args) {
 void handleLoopCommand(String args) {
   Serial.println("Starting loop sequence: " + String(LOOP_SEQUENCE_STEPS) + " steps forward with circulating lights");
   
-  extern void displayCommand(String command);
   displayCommand("LOOP START");
-  delay(2000);  // Show "LOOP START" for 2 seconds
+  delay(2000);
   
   extern bool disableAutoLCDUpdate;
-  disableAutoLCDUpdate = true;  // Disable automatic LCD updates
+  disableAutoLCDUpdate = true;
   
   trafficLight.isRunning = false;
   setTrafficLight(false, false, false);
@@ -179,7 +171,7 @@ void handleLoopCommand(String args) {
   unsigned long startTime = millis();
   unsigned long lastLightChange = millis();
   LightColor currentLight = LIGHT_RED;
-  LightColor previousLight = LIGHT_GREEN; // Different from current to force first update
+  LightColor previousLight = LIGHT_GREEN;
   int lastDisplayedStep = -1;
   
   setTrafficLightByColor(currentLight);
@@ -187,7 +179,6 @@ void handleLoopCommand(String args) {
   
   motorState.isRunning = true;
   
-  // Initial LCD setup
   extern LiquidCrystal_I2C lcd;
   lcd.clear();
   
@@ -202,39 +193,32 @@ void handleLoopCommand(String args) {
       Serial.println("Switching to " + lightName + " light - Steps completed: " + String(step));
     }
     
-    // Only update LCD when light changes or every 1000 steps
     if (currentLight != previousLight || step - lastDisplayedStep >= 1000) {
-      // Clear entire display and write everything fresh
       lcd.clear();
       
-      // Line 1
       lcd.setCursor(0, 0);
       lcd.print("LOOP SEQUENCE ACTIVE");
       
-      // Line 2
       lcd.setCursor(0, 1);
       if (currentLight == LIGHT_RED) {
-        lcd.print("LIGHT: RED          ");
+        lcd.print("LIGHT: RED");
       } else if (currentLight == LIGHT_YELLOW) {
-        lcd.print("LIGHT: YELLOW       ");
+        lcd.print("LIGHT: YELLOW");
       } else {
-        lcd.print("LIGHT: GREEN        ");
+        lcd.print("LIGHT: GREEN");
       }
       
-      // Line 3
       lcd.setCursor(0, 2);
       lcd.print("STEP: ");
       lcd.print(step);
       lcd.print(" / ");
       lcd.print(LOOP_SEQUENCE_STEPS);
-      lcd.print("    ");
       
-      // Line 4
       lcd.setCursor(0, 3);
       float progress = (float)step / LOOP_SEQUENCE_STEPS * 100;
       lcd.print("PROGRESS: ");
       lcd.print(progress, 1);
-      lcd.print("%       ");
+      lcd.print("%");
       
       previousLight = currentLight;
       lastDisplayedStep = step;
@@ -247,13 +231,15 @@ void handleLoopCommand(String args) {
   motorState.isRunning = false;
   stopMotor();
   
-  disableAutoLCDUpdate = false;  // Re-enable automatic LCD updates
+  disableAutoLCDUpdate = false;
   
-  extern LiquidCrystal_I2C lcd;
   lcd.clear();
-  lcd.setCursor(0, 0);
+  
+  // Center "THANK YOU AZIZ" (14 chars) on 20-char display
+  // Position: (20-14)/2 = 3 spaces from left
+  lcd.setCursor(3, 1);  // Row 1 (middle of 4 rows)
   lcd.print("THANK YOU AZIZ");
-  delay(30000);  // 30 seconds
+  delay(30000);
   
   unsigned long totalTime = millis() - startTime;
   Serial.println("Loop sequence completed!");

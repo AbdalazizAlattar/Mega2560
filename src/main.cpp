@@ -3,7 +3,7 @@
  * @brief Stepper Motor and Traffic Light Control System
  * @details Compatible with Arduino Mega 2560 R3 and ULN2003 Driver Board
  * @author Aziz Project
- * @version 2.0
+ * @version 2.1
  */
 
 #include <Arduino.h>

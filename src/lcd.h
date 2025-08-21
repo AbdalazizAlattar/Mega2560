@@ -7,15 +7,14 @@
 
 // ========== LCD GLOBAL INSTANCE ==========
 extern LiquidCrystal_I2C lcd;
+extern MotorState motorState;
+extern TrafficLightState_t trafficLight;
 
 // ========== LCD FUNCTION DECLARATIONS ==========
 void initializeLCD();
 void updateLCDStatus();
-void displayMotorInfo(int steps, String direction, int speed);
-void displayTrafficInfo(String state, unsigned long timeLeft);
 void displayCommand(String command);
 void displayError(String error);
-void clearLCDLine(int line);
 
 // ========== LCD FUNCTION IMPLEMENTATIONS ==========
 
@@ -24,86 +23,82 @@ void initializeLCD() {
   lcd.backlight();
   lcd.clear();
   
-  lcd.setCursor(0, 0);
+  // Create custom heart character
+  byte heart[8] = {
+    0b00000,
+    0b01010,
+    0b11111,
+    0b11111,
+    0b11111,
+    0b01110,
+    0b00100,
+    0b00000
+  };
+  lcd.createChar(0, heart);
+  
+  // Center "HI ABDALAZIZ" (12 chars) on 20-char display
+  // Position: (20-12)/2 = 4 spaces from left
+  lcd.setCursor(4, 1);  // Row 1 (middle of 4 rows)
   lcd.print("HI ABDALAZIZ");
   
-  delay(5000);  // 30 seconds
+  // Center heart symbol on row 3
+  // Position: (20-1)/2 = 9.5, so position 9
+  lcd.setCursor(9, 2);  // Row 2 (0-indexed, so row 3)
+  lcd.write(byte(0));   // Display custom heart character
+  
+  delay(5000);
   lcd.clear();
   updateLCDStatus();
 }
 
 void updateLCDStatus() {
+  lcd.clear();
+  
   lcd.setCursor(0, 0);
-  lcd.print("MOTOR STATUS:       ");
+  lcd.print("MOTOR STATUS:");
   
   lcd.setCursor(0, 1);
-  extern MotorState motorState;
   if (motorState.isRunning) {
     lcd.print("RUNNING - SPEED: ");
     lcd.print(motorState.stepDelay);
-    lcd.print("   ");
   } else {
     lcd.print("READY - SPEED: ");
     lcd.print(motorState.stepDelay);
-    lcd.print("     ");
   }
   
   lcd.setCursor(0, 2);
-  lcd.print("TRAFFIC LIGHT:      ");
+  lcd.print("TRAFFIC LIGHT:");
   
   lcd.setCursor(0, 3);
-  extern TrafficLightState_t trafficLight;
   if (trafficLight.isRunning) {
     switch (trafficLight.currentState) {
       case TRAFFIC_RED:
-        lcd.print("RED LIGHT ON        ");
+        lcd.print("RED LIGHT ON");
         break;
       case TRAFFIC_YELLOW:
-        lcd.print("YELLOW LIGHT ON     ");
+        lcd.print("YELLOW LIGHT ON");
         break;
       case TRAFFIC_GREEN:
-        lcd.print("GREEN LIGHT ON      ");
+        lcd.print("GREEN LIGHT ON");
         break;
     }
   } else {
-    lcd.print("ALL LIGHTS OFF      ");
-  }
-}
-
-void displayMotorInfo(int steps, String direction, int speed) {
-  clearLCDLine(1);
-  lcd.setCursor(0, 1);
-  String dir = (direction == "CLOCKWISE") ? "FWD" : "REV";
-  lcd.print(dir + ":" + String(steps) + " S:" + String(speed));
-}
-
-void displayTrafficInfo(String state, unsigned long timeLeft) {
-  clearLCDLine(0);
-  lcd.setCursor(0, 0);
-  lcd.print("Traffic: " + state);
-  if (timeLeft > 0) {
-    lcd.setCursor(11, 0);
-    lcd.print(String(timeLeft/1000) + "s");
+    lcd.print("ALL LIGHTS OFF");
   }
 }
 
 void displayCommand(String command) {
-  clearLCDLine(1);
+  lcd.clear();
   lcd.setCursor(0, 1);
-  lcd.print("CMD: " + command.substring(0, 11));
+  lcd.print("CMD: " + command);
 }
 
 void displayError(String error) {
-  clearLCDLine(1);
+  lcd.clear();
   lcd.setCursor(0, 1);
-  lcd.print("ERR: " + error.substring(0, 11));
+  lcd.print("ERROR: " + error);
   delay(2000);
   updateLCDStatus();
-}
-
-void clearLCDLine(int line) {
-  lcd.setCursor(0, line);
-  lcd.print("                ");
 }
 
 #endif // LCD_H

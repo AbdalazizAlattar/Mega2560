@@ -56,16 +56,10 @@ void executeStep(MotorDirection direction) {
 void moveSteps(int steps, MotorDirection direction) {
   if (!validateStepCount(steps)) {
     Serial.println("Error: Invalid step count");
-    extern void displayError(String error);
-    displayError("Invalid steps");
     return;
   }
   
   motorState.isRunning = true;
-  
-  extern void displayMotorInfo(int steps, String direction, int speed);
-  String dir = (direction == CLOCKWISE) ? "CLOCKWISE" : "COUNTER_CLOCKWISE";
-  displayMotorInfo(steps, dir, motorState.stepDelay);
   
   for (int i = 0; i < steps; i++) {
     executeStep(direction);
@@ -99,15 +93,13 @@ void runMotorDemo() {
 bool setMotorSpeed(int speed) {
   if (speed >= MIN_STEP_DELAY && speed <= MAX_STEP_DELAY) {
     motorState.stepDelay = speed;
-    extern void updateLCDStatus();
-    updateLCDStatus();
     return true;
   }
   return false;
 }
 
 bool validateStepCount(int steps) {
-  return steps > 0 && steps <= 100000; // Reasonable upper limit
+  return steps > 0 && steps <= 100000;
 }
 
 #endif // MOTOR_H

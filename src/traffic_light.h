@@ -74,13 +74,9 @@ void toggleTrafficLightCycle() {
     trafficLight.startTime = millis();
     trafficLight.currentState = TRAFFIC_RED;
     setTrafficLight(true, false, false);
-    extern void displayTrafficInfo(String state, unsigned long timeLeft);
-    displayTrafficInfo("STARTED", 0);
   } else {
     Serial.println("Traffic light cycle STOPPED");
     setTrafficLight(false, false, false);
-    extern void displayTrafficInfo(String state, unsigned long timeLeft);
-    displayTrafficInfo("STOPPED", 0);
   }
 }
 
@@ -124,9 +120,6 @@ void flashAllLights() {
   trafficLight.isRunning = false;
   Serial.println("Flashing all traffic lights");
   
-  extern void displayTrafficInfo(String state, unsigned long timeLeft);
-  displayTrafficInfo("FLASHING", 0);
-  
   for (int i = 0; i < FLASH_CYCLES; i++) {
     setTrafficLight(true, true, true);
     delay(FLASH_DELAY_MS);
@@ -135,15 +128,11 @@ void flashAllLights() {
   }
   
   Serial.println("Flash complete");
-  displayTrafficInfo("FLASH DONE", 0);
 }
 
 void emergencyFlash() {
   trafficLight.isRunning = false;
   Serial.println("Emergency flashing RED");
-  
-  extern void displayTrafficInfo(String state, unsigned long timeLeft);
-  displayTrafficInfo("EMERGENCY", 0);
   
   for (int i = 0; i < EMERGENCY_FLASH_CYCLES; i++) {
     setTrafficLight(true, false, false);
@@ -153,7 +142,6 @@ void emergencyFlash() {
   }
   
   Serial.println("Emergency flash complete");
-  displayTrafficInfo("EMRG DONE", 0);
 }
 
 bool setTrafficTiming(unsigned long red, unsigned long yellow, unsigned long green) {
@@ -167,8 +155,7 @@ bool setTrafficTiming(unsigned long red, unsigned long yellow, unsigned long gre
 }
 
 bool parseTimingCommand(String command) {
-  // Expected format: timing5000,2000,4000
-  String timingStr = command.substring(6); // Remove "timing"
+  String timingStr = command.substring(6);
   
   int firstComma = timingStr.indexOf(',');
   int secondComma = timingStr.indexOf(',', firstComma + 1);
