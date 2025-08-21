@@ -178,7 +178,6 @@ void handleLoopCommand(String args) {
   
   unsigned long startTime = millis();
   unsigned long lastLightChange = millis();
-  unsigned long lastStepUpdate = millis();
   LightColor currentLight = LIGHT_RED;
   LightColor previousLight = LIGHT_GREEN; // Different from current to force first update
   int lastDisplayedStep = -1;
@@ -191,8 +190,6 @@ void handleLoopCommand(String args) {
   // Initial LCD setup
   extern LiquidCrystal_I2C lcd;
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("LOOP SEQUENCE ACTIVE");
   
   for (int step = 0; step < LOOP_SEQUENCE_STEPS; step++) {
     if (millis() - lastLightChange >= LIGHT_CIRCULATION_DELAY_MS) {
@@ -205,19 +202,39 @@ void handleLoopCommand(String args) {
       Serial.println("Switching to " + lightName + " light - Steps completed: " + String(step));
     }
     
-    // Only update LCD when light changes or every 500 steps
-    if (currentLight != previousLight || step - lastDisplayedStep >= 500) {
+    // Only update LCD when light changes or every 1000 steps
+    if (currentLight != previousLight || step - lastDisplayedStep >= 1000) {
+      // Clear entire display and write everything fresh
+      lcd.clear();
+      
+      // Line 1
+      lcd.setCursor(0, 0);
+      lcd.print("LOOP SEQUENCE ACTIVE");
+      
+      // Line 2
       lcd.setCursor(0, 1);
-      String lightName = (currentLight == LIGHT_RED) ? "RED   " : 
-                        (currentLight == LIGHT_YELLOW) ? "YELLOW" : "GREEN ";
-      lcd.print("LIGHT: " + lightName + "        ");
+      if (currentLight == LIGHT_RED) {
+        lcd.print("LIGHT: RED          ");
+      } else if (currentLight == LIGHT_YELLOW) {
+        lcd.print("LIGHT: YELLOW       ");
+      } else {
+        lcd.print("LIGHT: GREEN        ");
+      }
       
+      // Line 3
       lcd.setCursor(0, 2);
-      lcd.print("STEP: " + String(step) + " / " + String(LOOP_SEQUENCE_STEPS) + "     ");
+      lcd.print("STEP: ");
+      lcd.print(step);
+      lcd.print(" / ");
+      lcd.print(LOOP_SEQUENCE_STEPS);
+      lcd.print("    ");
       
+      // Line 4
       lcd.setCursor(0, 3);
       float progress = (float)step / LOOP_SEQUENCE_STEPS * 100;
-      lcd.print("PROGRESS: " + String(progress, 1) + "%      ");
+      lcd.print("PROGRESS: ");
+      lcd.print(progress, 1);
+      lcd.print("%       ");
       
       previousLight = currentLight;
       lastDisplayedStep = step;

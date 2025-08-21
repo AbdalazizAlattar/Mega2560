@@ -27,7 +27,7 @@ void initializeLCD() {
   lcd.setCursor(0, 0);
   lcd.print("HI ABDALAZIZ");
   
-  delay(30000);  // 30 seconds
+  delay(5000);  // 30 seconds
   lcd.clear();
   updateLCDStatus();
 }
