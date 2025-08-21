@@ -7,14 +7,17 @@
  */
 
 #include <Arduino.h>
+#include <LiquidCrystal_I2C.h>
 #include "config.h"
 #include "motor.h"
 #include "traffic_light.h"
 #include "commands.h"
+#include "lcd.h"
 
 // ========== GLOBAL STATE INSTANCES ==========
 MotorState motorState;
 TrafficLightState_t trafficLight;
+LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
 
 /**
  * @brief Initialize the system
@@ -23,6 +26,7 @@ TrafficLightState_t trafficLight;
 void setup() {
   Serial.begin(SERIAL_BAUD_RATE);
   
+  initializeLCD();
   initializeMotor();
   initializeTrafficLight();
   
@@ -39,6 +43,12 @@ void setup() {
  */
 void loop() {
   runTrafficLightCycle();
+  
+  static unsigned long lastLCDUpdate = 0;
+  if (millis() - lastLCDUpdate > 500) {
+    updateLCDStatus();
+    lastLCDUpdate = millis();
+  }
   
   if (Serial.available()) {
     String input = Serial.readString();

@@ -13,6 +13,11 @@
 #define YELLOW_LED_PIN 13
 #define GREEN_LED_PIN 7
 
+// I2C LCD configuration
+#define LCD_ADDRESS 0x27
+#define LCD_COLUMNS 16
+#define LCD_ROWS 2
+
 // ========== MOTOR CONSTANTS ==========
 #define MOTOR_STEPS_PER_REVOLUTION 8
 #define DEFAULT_STEP_DELAY_MS 2

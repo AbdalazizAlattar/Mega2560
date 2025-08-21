@@ -65,9 +65,13 @@ void handleForwardCommand(String args) {
   int steps = args.toInt();
   if (validateStepCount(steps)) {
     Serial.println("Moving forward " + String(steps) + " steps");
+    extern void displayCommand(String command);
+    displayCommand("FWD " + String(steps));
     moveSteps(steps, CLOCKWISE);
   } else {
     Serial.println("Invalid step count");
+    extern void displayError(String error);
+    displayError("Invalid steps");
   }
 }
 
@@ -75,9 +79,13 @@ void handleReverseCommand(String args) {
   int steps = args.toInt();
   if (validateStepCount(steps)) {
     Serial.println("Moving reverse " + String(steps) + " steps");
+    extern void displayCommand(String command);
+    displayCommand("REV " + String(steps));
     moveSteps(steps, COUNTER_CLOCKWISE);
   } else {
     Serial.println("Invalid step count");
+    extern void displayError(String error);
+    displayError("Invalid steps");
   }
 }
 
@@ -85,17 +93,25 @@ void handleSpeedCommand(String args) {
   int speed = args.toInt();
   if (setMotorSpeed(speed)) {
     Serial.println("Speed set to " + String(speed));
+    extern void displayCommand(String command);
+    displayCommand("SPD " + String(speed));
   } else {
     Serial.println("Speed must be between " + String(MIN_STEP_DELAY) + " and " + String(MAX_STEP_DELAY));
+    extern void displayError(String error);
+    displayError("Invalid speed");
   }
 }
 
 void handleStopCommand(String args) {
   stopMotor();
   Serial.println("Motor stopped");
+  extern void displayCommand(String command);
+  displayCommand("STOP");
 }
 
 void handleDemoCommand(String args) {
+  extern void displayCommand(String command);
+  displayCommand("DEMO");
   runMotorDemo();
 }
 
@@ -150,15 +166,22 @@ void handleTimingCommand(String args) {
 void handleLoopCommand(String args) {
   Serial.println("Starting loop sequence: " + String(LOOP_SEQUENCE_STEPS) + " steps forward with circulating lights");
   
+  extern void displayCommand(String command);
+  displayCommand("LOOP START");
+  delay(2000);  // Show "LOOP START" for 2 seconds
+  
   trafficLight.isRunning = false;
   setTrafficLight(false, false, false);
   
   unsigned long startTime = millis();
   unsigned long lastLightChange = millis();
+  unsigned long lastLCDUpdate = millis();
   LightColor currentLight = LIGHT_RED;
   
   setTrafficLightByColor(currentLight);
   Serial.println("Starting with RED light");
+  
+  motorState.isRunning = true;
   
   for (int step = 0; step < LOOP_SEQUENCE_STEPS; step++) {
     if (millis() - lastLightChange >= LIGHT_CIRCULATION_DELAY_MS) {
@@ -171,11 +194,31 @@ void handleLoopCommand(String args) {
       Serial.println("Switching to " + lightName + " light - Steps completed: " + String(step));
     }
     
+    // Update LCD every 100 steps
+    if (millis() - lastLCDUpdate >= 200) {
+      extern LiquidCrystal_I2C lcd;
+      lcd.setCursor(0, 0);
+      lcd.print("M:RUN T:");
+      String lightName = (currentLight == LIGHT_RED) ? "RED" : 
+                        (currentLight == LIGHT_YELLOW) ? "YEL" : "GRN";
+      lcd.print(lightName + "  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Step:" + String(step) + "    ");
+      lastLCDUpdate = millis();
+    }
+    
     executeStep(CLOCKWISE);
   }
   
   setTrafficLight(false, false, false);
+  motorState.isRunning = false;
   stopMotor();
+  
+  extern LiquidCrystal_I2C lcd;
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("THANK YOU AZIZ");
+  delay(30000);  // 30 seconds
   
   unsigned long totalTime = millis() - startTime;
   Serial.println("Loop sequence completed!");
