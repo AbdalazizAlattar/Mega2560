@@ -18,6 +18,7 @@
 MotorState motorState;
 TrafficLightState_t trafficLight;
 LiquidCrystal_I2C lcd(LCD_ADDRESS, LCD_COLUMNS, LCD_ROWS);
+bool disableAutoLCDUpdate = false;
 
 /**
  * @brief Initialize the system
@@ -45,7 +46,7 @@ void loop() {
   runTrafficLightCycle();
   
   static unsigned long lastLCDUpdate = 0;
-  if (millis() - lastLCDUpdate > 500) {
+  if (!disableAutoLCDUpdate && millis() - lastLCDUpdate > 500) {
     updateLCDStatus();
     lastLCDUpdate = millis();
   }

@@ -170,18 +170,29 @@ void handleLoopCommand(String args) {
   displayCommand("LOOP START");
   delay(2000);  // Show "LOOP START" for 2 seconds
   
+  extern bool disableAutoLCDUpdate;
+  disableAutoLCDUpdate = true;  // Disable automatic LCD updates
+  
   trafficLight.isRunning = false;
   setTrafficLight(false, false, false);
   
   unsigned long startTime = millis();
   unsigned long lastLightChange = millis();
-  unsigned long lastLCDUpdate = millis();
+  unsigned long lastStepUpdate = millis();
   LightColor currentLight = LIGHT_RED;
+  LightColor previousLight = LIGHT_GREEN; // Different from current to force first update
+  int lastDisplayedStep = -1;
   
   setTrafficLightByColor(currentLight);
   Serial.println("Starting with RED light");
   
   motorState.isRunning = true;
+  
+  // Initial LCD setup
+  extern LiquidCrystal_I2C lcd;
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("LOOP SEQUENCE ACTIVE");
   
   for (int step = 0; step < LOOP_SEQUENCE_STEPS; step++) {
     if (millis() - lastLightChange >= LIGHT_CIRCULATION_DELAY_MS) {
@@ -194,17 +205,22 @@ void handleLoopCommand(String args) {
       Serial.println("Switching to " + lightName + " light - Steps completed: " + String(step));
     }
     
-    // Update LCD every 100 steps
-    if (millis() - lastLCDUpdate >= 200) {
-      extern LiquidCrystal_I2C lcd;
-      lcd.setCursor(0, 0);
-      lcd.print("M:RUN T:");
-      String lightName = (currentLight == LIGHT_RED) ? "RED" : 
-                        (currentLight == LIGHT_YELLOW) ? "YEL" : "GRN";
-      lcd.print(lightName + "  ");
+    // Only update LCD when light changes or every 500 steps
+    if (currentLight != previousLight || step - lastDisplayedStep >= 500) {
       lcd.setCursor(0, 1);
-      lcd.print("Step:" + String(step) + "    ");
-      lastLCDUpdate = millis();
+      String lightName = (currentLight == LIGHT_RED) ? "RED   " : 
+                        (currentLight == LIGHT_YELLOW) ? "YELLOW" : "GREEN ";
+      lcd.print("LIGHT: " + lightName + "        ");
+      
+      lcd.setCursor(0, 2);
+      lcd.print("STEP: " + String(step) + " / " + String(LOOP_SEQUENCE_STEPS) + "     ");
+      
+      lcd.setCursor(0, 3);
+      float progress = (float)step / LOOP_SEQUENCE_STEPS * 100;
+      lcd.print("PROGRESS: " + String(progress, 1) + "%      ");
+      
+      previousLight = currentLight;
+      lastDisplayedStep = step;
     }
     
     executeStep(CLOCKWISE);
@@ -213,6 +229,8 @@ void handleLoopCommand(String args) {
   setTrafficLight(false, false, false);
   motorState.isRunning = false;
   stopMotor();
+  
+  disableAutoLCDUpdate = false;  // Re-enable automatic LCD updates
   
   extern LiquidCrystal_I2C lcd;
   lcd.clear();

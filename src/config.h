@@ -15,8 +15,8 @@
 
 // I2C LCD configuration
 #define LCD_ADDRESS 0x27
-#define LCD_COLUMNS 16
-#define LCD_ROWS 2
+#define LCD_COLUMNS 20
+#define LCD_ROWS 4
 
 // ========== MOTOR CONSTANTS ==========
 #define MOTOR_STEPS_PER_REVOLUTION 8

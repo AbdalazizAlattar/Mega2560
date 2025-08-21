@@ -34,35 +34,39 @@ void initializeLCD() {
 
 void updateLCDStatus() {
   lcd.setCursor(0, 0);
-  lcd.print("M:STOP T:");
-  
-  extern TrafficLightState_t trafficLight;
-  if (trafficLight.isRunning) {
-    switch (trafficLight.currentState) {
-      case TRAFFIC_RED:
-        lcd.print("RED  ");
-        break;
-      case TRAFFIC_YELLOW:
-        lcd.print("YEL  ");
-        break;
-      case TRAFFIC_GREEN:
-        lcd.print("GRN  ");
-        break;
-    }
-  } else {
-    lcd.print("OFF  ");
-  }
+  lcd.print("MOTOR STATUS:       ");
   
   lcd.setCursor(0, 1);
   extern MotorState motorState;
   if (motorState.isRunning) {
-    lcd.print("Running Spd:");
+    lcd.print("RUNNING - SPEED: ");
     lcd.print(motorState.stepDelay);
-    lcd.print("  ");
+    lcd.print("   ");
   } else {
-    lcd.print("Ready   Spd:");
+    lcd.print("READY - SPEED: ");
     lcd.print(motorState.stepDelay);
-    lcd.print("  ");
+    lcd.print("     ");
+  }
+  
+  lcd.setCursor(0, 2);
+  lcd.print("TRAFFIC LIGHT:      ");
+  
+  lcd.setCursor(0, 3);
+  extern TrafficLightState_t trafficLight;
+  if (trafficLight.isRunning) {
+    switch (trafficLight.currentState) {
+      case TRAFFIC_RED:
+        lcd.print("RED LIGHT ON        ");
+        break;
+      case TRAFFIC_YELLOW:
+        lcd.print("YELLOW LIGHT ON     ");
+        break;
+      case TRAFFIC_GREEN:
+        lcd.print("GREEN LIGHT ON      ");
+        break;
+    }
+  } else {
+    lcd.print("ALL LIGHTS OFF      ");
   }
 }
 
