@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__getDiagnostics",
+      "Bash(pio run:*)",
+      "Bash(python -m platformio run)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
