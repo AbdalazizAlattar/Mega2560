@@ -162,7 +162,6 @@ void handleLoopCommand(String args) {
   displayCommand("LOOP START");
   delay(2000);
   
-  extern bool disableAutoLCDUpdate;
   disableAutoLCDUpdate = true;
   
   trafficLight.isRunning = false;
