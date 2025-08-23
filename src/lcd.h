@@ -9,6 +9,7 @@
 extern LiquidCrystal_I2C lcd;
 extern MotorState motorState;
 extern TrafficLightState_t trafficLight;
+extern bool disableAutoLCDUpdate;
 
 // ========== LCD FUNCTION DECLARATIONS ==========
 void initializeLCD();
